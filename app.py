@@ -8,12 +8,11 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    start_coords = (40.6782, -73.9442)
+    start_coords = (40.7244412, -73.9484945)
     map = folium.Map(location=start_coords, zoom_start=13)
 
     # TODO allow adding locations with google forms
     # TODO cache the map so it is not being recomputed each time?
-
     prices = []
 
     with open('locations.csv', 'r', newline='') as csvfile:
@@ -23,7 +22,7 @@ def index():
 
             folium.Marker(
                 [lon, lat], 
-                popup=folium.Popup(name, parse_html=True)
+                popup=name
             ).add_to(map)
 
     HeatMap(prices).add_to(map)
