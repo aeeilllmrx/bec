@@ -1,29 +1,46 @@
 import csv
 import folium
+import pandas as pd
 
+from dotenv import load_dotenv
 from flask import Flask
-from folium.plugins import HeatMap
 
 app = Flask(__name__)
 
-@app.route('/')
+load_dotenv()
+
+
+@app.route("/")
 def index():
-    start_coords = (40.7244412, -73.9484945)
-    map = folium.Map(location=start_coords, zoom_start=15)
+    start_coords = (40.635, -73.95)
+    map = folium.Map(location=start_coords, zoom_start=12, tiles="cartodbpositron")
 
-    # TODO allow adding locations with google forms
-    # TODO cache the map so it is not being recomputed each time
-    prices = []
+    brooklyn_nabes_url = "https://raw.githubusercontent.com/blackmad/neighborhoods/master/brooklyn.geojson"
+    folium.GeoJson(brooklyn_nabes_url).add_to(map)
 
-    with open('locations.csv', 'r', newline='') as csvfile:
+    with open("locations.csv", "r", newline="") as csvfile:
         csv_reader = csv.reader(csvfile)
-        for name, lat, lon, price in csv_reader:
-            prices.append([float(lat), float(lon), float(price)])
-            folium.Marker([float(lat), float(lon)], popup=name).add_to(map)
+        next(csv_reader)  # skip the header
+        for name, _, lat, lon, price in csv_reader:
+            popup_text = f"{name}: ${price}"
+            folium.Marker([float(lat), float(lon)], popup=popup_text).add_to(map)
 
-    HeatMap(prices).add_to(map)
+    prices_df = pd.read_csv("locations.csv")
+
+    folium.Choropleth(
+        geo_data=brooklyn_nabes_url,
+        data=prices_df,
+        columns=["neighborhood", "price"],
+        key_on="feature.properties.name",
+        fill_color="RdYlGn_r",
+        fill_opacity=0.8,
+        line_opacity=0.3,
+        nan_fill_color="white",
+        legend_name="Average price for a BEC",
+    ).add_to(map)
 
     return map._repr_html_()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)

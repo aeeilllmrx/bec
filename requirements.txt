@@ -1,3 +1,5 @@
-Flask
-folium
-gunicorn
+Flask==3.0.2
+folium==0.16.0
+gunicorn==21.2.0
+pandas==2.2.1
+python-dotenv==1.0.1

@@ -1,0 +1,2 @@
+- allow adding locations with google forms
+- cache the map so it is not being recomputed each time
