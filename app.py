@@ -1,4 +1,3 @@
-import csv
 import folium
 import pandas as pd
 
@@ -18,14 +17,13 @@ def index():
     brooklyn_nabes_url = "https://raw.githubusercontent.com/blackmad/neighborhoods/master/brooklyn.geojson"
     folium.GeoJson(brooklyn_nabes_url).add_to(map)
 
-    with open("locations.csv", "r", newline="") as csvfile:
-        csv_reader = csv.reader(csvfile)
-        next(csv_reader)  # skip the header
-        for name, _, lat, lon, price in csv_reader:
-            popup_text = f"{name}: ${price}"
-            folium.Marker([float(lat), float(lon)], popup=popup_text).add_to(map)
+    prices_df = pd.read_csv("src/data.csv")
+    for name, lat, lon, item, price in prices_df.itertuples(index=False):
+        popup_text = f"{name}: {item}, ${price}"
+        folium.Marker([float(lat), float(lon)], popup=popup_text).add_to(map)
 
-    prices_df = pd.read_csv("locations.csv")
+    # TODO get neighborhood from lat/long
+    prices_df["neighborhood"] = None
 
     folium.Choropleth(
         geo_data=brooklyn_nabes_url,
